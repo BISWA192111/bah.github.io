@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crater Detection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Crater Image</h1>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <input type="submit" value="Upload Image">
+         <h2> Latitude and Longitude results will be displayed here </h2>
+     </div>
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(event) {
+            event.preventDefault();  // Prevent the default form submission
+            
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                const resultDiv = document.getElementById('result');
+                
+                if (data.latitude && data.longitude) {
+                    resultDiv.innerHTML = `
+                        <h2>Crater Coordinates</h2>
+                        <p><strong>Latitude:</strong> ${data.latitude}</p>
+                        <p><strong>Longitude:</strong> ${data.longitude}</p>
+                    `;
+                } else if (data.error) {
+                    resultDiv.innerHTML = `
+                        <h2>Error</h2>
+                        <p>${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+                document.getElementById('result').innerHTML = `
+                    <h2>Error</h2>
+                    <p>There was a problem with the upload. Please try again.</p>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>
